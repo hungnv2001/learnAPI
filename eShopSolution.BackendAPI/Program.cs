@@ -1,3 +1,5 @@
+using eShopSolution.Aplication.Catalog.Products;
+using eShopSolution.Aplication.Common;
 using eShopSolution.Data.EF;
 using eShopSolution.ViewModel.Catalog.Products;
 using EShopSolution.Utilities.Constants;
@@ -9,8 +11,12 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<EShopDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString(SystemConstants.MainConnectionString)));
 builder.Services.AddTransient<IPublicProduct, PublicProductService>();
+builder.Services.AddTransient<IManagerProductService, ManageProductService>();
+builder.Services.AddTransient<IStorageService, FileStorageService>();
 builder.Services.AddSwaggerGen(p =>
 p.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo { Title = "Swagger eShop Solution", Version = "v1" }));
+
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -26,6 +32,7 @@ app.UseStaticFiles();
 
 app.UseRouting();
 app.UseSwagger();
+
 app.UseSwaggerUI(c =>
 {
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "Swasgger eShop V1");

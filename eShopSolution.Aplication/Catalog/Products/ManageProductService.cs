@@ -58,13 +58,14 @@ namespace eShopSolution.Aplication.Catalog.Products
             };
            
             _context.Products.Add(product);
-            return await _context.SaveChangesAsync();
+           await _context.SaveChangesAsync();
+            return product.Id;
         }
   
         public async Task<int> Delete(int id)
         {
             var product = await _context.Products.FindAsync(id);
-            if (product != null) throw new EShopException("Can not find this product: " + id);
+            if (product == null) throw new EShopException("Can not find this product: " + id);
             _context.Products.Remove(product);
             return await _context.SaveChangesAsync();
         }
@@ -118,20 +119,22 @@ namespace eShopSolution.Aplication.Catalog.Products
         {
             var product = await _context.Products.FindAsync(id);
             var productTranslation = await _context.ProductTranslations.FirstOrDefaultAsync(x => x.ProductId == request.Id && x.LanguageId == request.LanguageId);
-            if (product != null) throw new EShopException("Can not find this product: " + id);
+            if (product == null) throw new EShopException("Can not find this product: " + id);
             productTranslation.Name = request.Name;
             productTranslation.Description = request.Description;
             productTranslation.SeoDescription = request.SeoDescription;
             productTranslation.SeoTitle = request.SeoTitle;
             productTranslation.SeoAlias = request.SeoAlias;
             productTranslation.Details = request.Details;
+            
+            _context.ProductTranslations.Update(productTranslation);
             return await _context.SaveChangesAsync();
         }
 
         public async Task<bool> UpdatePrice(int id, decimal newPrice)
         {
             var product = await _context.Products.FindAsync(id);
-            if (product != null) throw new EShopException("Can not find this product: " + id);
+            if (product == null) throw new EShopException("Can not find this product: " + id);
             product.Price = newPrice;
             return await _context.SaveChangesAsync() > 0;
         }
@@ -142,6 +145,41 @@ namespace eShopSolution.Aplication.Catalog.Products
             if (product != null) throw new EShopException("Can not find this product: " + id);
             product.Stock = newStock;
             return await _context.SaveChangesAsync() > 0;
+        }
+
+        public async Task<ProductViewModel> GetByID(int productID, string languageID)
+        {
+            var product = await _context.Products.FindAsync(productID);
+            var productTranslation = await _context.ProductTranslations.FirstOrDefaultAsync(x => x.ProductId == productID&&x.LanguageId==languageID);
+
+            var categories = await (from c in _context.Categories
+                                    join ct in _context.CategoryTranslations on c.Id equals ct.CategoryId
+                                    join pic in _context.ProductInCategories on c.Id equals pic.CategoryId
+                                    where pic.ProductId == productID && languageID==languageID
+                                    select ct.Name).ToListAsync();
+
+            var image = await _context.ProductImages.Where(x => x.ProductId == productID && x.IsDefault == true).FirstOrDefaultAsync();
+
+            var productViewModel = new ProductViewModel()
+            {
+                Id = product.Id,
+                DateCreated = product.DateCreated,
+                Description = productTranslation != null ? productTranslation.Description : null,
+                LanguageId = productTranslation.LanguageId,
+                Details = productTranslation != null ? productTranslation.Details : null,
+                Name = productTranslation != null ? productTranslation.Name : null,
+                OriginalPrice = product.OriginalPrice,
+                Price = product.Price,
+                SeoAlias = productTranslation != null ? productTranslation.SeoAlias : null,
+                SeoDescription = productTranslation != null ? productTranslation.SeoDescription : null,
+                SeoTitle = productTranslation != null ? productTranslation.SeoTitle : null,
+                Stock = product.Stock,
+                ViewCount = product.ViewCount,
+                Categories = categories,
+                ThurmbnailImage = image != null ? image.ImagePath : "no-image.jpg"
+            };
+            return productViewModel;
+
         }
     }
 }
