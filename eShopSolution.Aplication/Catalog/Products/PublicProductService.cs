@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using eShopSolution.ViewModel.Catalog.Product;
+using eShopSolution.Data.Entities;
 
 namespace eShopSolution.ViewModel.Catalog.Products
 {
@@ -20,40 +21,42 @@ namespace eShopSolution.ViewModel.Catalog.Products
             _context = context;
         }
 
-        public async Task<List<ProductViewModel>> GetAll()
+        public async Task<List<ProductViewModel>> GetAll(string languageID)
         {
             var query = from p in _context.Products
                         join pt in _context.ProductTranslations on p.Id equals pt.ProductId
                         join pic in _context.ProductInCategories on p.Id equals pic.ProductId
                         join c in _context.Categories on pic.CategoryId equals c.Id
                         join ct in _context.CategoryTranslations on c.Id equals ct.CategoryId
+                        where pt.LanguageId == languageID && ct.LanguageId == languageID
                         select new { p, pt, pic };
-            var data = await  query.Select(x => new ProductViewModel()
-               {
-                   Id = x.p.Id,
-                   Name = x.pt.Name,
-                   Description = x.pt.Description,
-                   Details = x.pt.Details,
-                   LanguageId = x.pt.LanguageId,
-                   Price = x.p.Price,
-                   OriginalPrice = x.p.OriginalPrice,
-                   DateCreated = x.p.DateCreated,
-                   SeoAlias = x.pt.SeoAlias,
-                   SeoDescription = x.pt.SeoDescription,
-                   SeoTitle = x.pt.SeoTitle,
-                   Stock = x.p.Stock,
-                   ViewCount = x.p.ViewCount,
-               }).ToListAsync();
-            return  data;
+            var data = await query.Select(x => new ProductViewModel()
+            {
+                Id = x.p.Id,
+                Name = x.pt.Name,
+                Description = x.pt.Description,
+                Details = x.pt.Details,
+                LanguageId = x.pt.LanguageId,
+                Price = x.p.Price,
+                OriginalPrice = x.p.OriginalPrice,
+                DateCreated = x.p.DateCreated,
+                SeoAlias = x.pt.SeoAlias,
+                SeoDescription = x.pt.SeoDescription,
+                SeoTitle = x.pt.SeoTitle,
+                Stock = x.p.Stock,
+                ViewCount = x.p.ViewCount,
+            }).ToListAsync();
+            return data;
         }
 
-        public async Task<PageResult<ProductViewModel>> GetAllByCategoryID(GetPublicProductPagingRequest request)
+        public async Task<PageResult<ProductViewModel>> GetAllByCategoryID(string languageID, GetPublicProductPagingRequest request)
         {
             var query = from p in _context.Products
                         join pt in _context.ProductTranslations on p.Id equals pt.ProductId
                         join pic in _context.ProductInCategories on p.Id equals pic.ProductId
                         join c in _context.Categories on pic.CategoryId equals c.Id
                         join ct in _context.CategoryTranslations on c.Id equals ct.CategoryId
+                        where pt.LanguageId == languageID && ct.LanguageId == languageID
                         select new { p, pt, pic };
             //fittel
             if (request.CatagoryID > 0)

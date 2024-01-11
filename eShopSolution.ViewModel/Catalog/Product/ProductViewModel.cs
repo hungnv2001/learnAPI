@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using eShopSolution.Data.Entities;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,8 +21,9 @@ namespace eShopSolution.ViewModel.Catalog.Products.DTO
         public string Details { set; get; }
         public string SeoDescription { set; get; }
         public string SeoTitle { set; get; }
-        public IFormFile ThurmbnailImage {  get; set; }
+        public string ThurmbnailImage {  get; set; }
         public string SeoAlias { get; set; }
         public string LanguageId { set; get; }
+        public List<string> Categories { get; set; }
     }
 }

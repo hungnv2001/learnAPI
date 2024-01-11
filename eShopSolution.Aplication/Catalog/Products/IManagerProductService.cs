@@ -19,7 +19,8 @@ namespace eShopSolution.Aplication.Catalog.Products
         Task AddViewCount(int id);
         Task<int> Delete(int productID);
 
-       
+
         Task<PageResult<ProductViewModel>> GetAllPaging(GetManageProductPagingRequest request);
+        Task<ProductViewModel> GetByID(int productID, string languageID);
     }
 }
